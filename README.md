@@ -1,4 +1,4 @@
-# 📞 Phonebook Management System
+# 📞 Phonebook Management System using Data Structure and Algorithms
 
 ## 📌 Introduction
 
