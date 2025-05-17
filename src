@@ -1,0 +1,456 @@
+#include<iostream>//Header Files
+#include<conio.h>
+#include<cstring>
+#include <windows.h>
+using namespace std;
+HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
+
+class dnode //Node Class
+{
+public:
+	char number[50];
+	char gmail[40];
+	char name[30];
+	dnode* prev, * next;
+	dnode(char n[], char r[], char g[]) // Parameterized Contructor
+	{
+		//String Copy Content
+		strcpy_s(name, n); //Built-In Functions
+		strcpy_s(number, r);
+		strcpy_s(gmail, g);
+		next = NULL;
+		prev = NULL;
+	}
+	friend class dlist; //Used Friend Class To Access The Private
+	//And Public Members Of The Other Class
+};
+class dlist
+{
+	dnode* head, * temp, * ptr; //Pointer Variables Of Node Class
+	dnode* ptr1, * ptr2, * dup;
+public:
+	dnode* prevn; //Previous Node For Doubly Linklist
+	void insert();
+	void sort();
+	void deletecontact(char n[20]);
+	void deletesamename();
+	void deletesamegmail();
+	void searchbyname(char p[20]);
+	void searchbynumber(char no[30]);
+	void searchbygmail(char g[20]);
+	void information();
+	void traverse();
+	void update(char ch[10]);
+	dlist() //Default Constructor Of dlist Class
+	{
+		head = NULL;
+		temp = NULL;
+		ptr = NULL;
+		ptr1 = NULL;
+		ptr2 = NULL;
+		dup = NULL;
+	}
+};
+//Accessing Functions Outside The Class Using Scope Resolution Operator
+void dlist::information()
+{
+	char number[50];
+	char gmail[40];
+	char name[30];
+	char ans;
+	do        //Using An Exit Control Loop
+	{
+		SetConsoleTextAttribute(console, 4);
+		cout << " ***********";
+		cout << "\n| Enter Name:";
+		SetConsoleTextAttribute(console, 1);
+		cin >> name;
+		cout << "| Enter Number:";
+		SetConsoleTextAttribute(console, 1);
+		cin >> number;
+		while (strlen(number) != 11) //Built-In Function strlen Finds The Actual Length Of String
+		{
+			SetConsoleTextAttribute(console, 4);
+			cout << "| Enter Correct Phone Number Please:";
+			SetConsoleTextAttribute(console, 1);
+			cin >> number;
+		}
+		cout << "| Enter Gmail:";
+		SetConsoleTextAttribute(console, 1);
+		cin >> gmail;
+		temp = new dnode(name, number, gmail); //Dynamic Memory Allocation
+		if (head == NULL)
+		{
+			head = temp; //If There Is No Value In The List The Check Adds a Value
+		}
+		else
+		{
+			ptr = head;
+			while (ptr->next != NULL) //In case there is a value in the stack so this check is used to place the value next to it
+			{
+				ptr = ptr->next; //traverse till end and then add a node
+			}
+			ptr->next = temp; //here linking the value with the first node plus doing double connection to the next nod eand to the previous node
+			temp->prev = ptr;
+		}
+		SetConsoleTextAttribute(console, 4);
+		cout << "\n ** Want to Add another Contact? * ***";
+		cin >> ans;
+	} while (ans == 'y'); //Exit control
+}
+//simple display function
+void dlist::traverse()
+{
+	ptr = head; //start the node
+	while (ptr != NULL) //traverse till last
+	{
+		cout << "\n\nName :\t" << ptr->name;
+		cout << "\nNumber:\t" << ptr->number;
+		cout << "\nGmail:\t" << ptr->gmail;
+		ptr = ptr->next; //takes address of next node and will print it in next turn and this will work till last node
+	}
+}
+void dlist::insert()
+{
+	information(); //calling function "information"
+}
+void dlist::sort()
+{
+	dnode* i, * j;
+	int temp;
+	char n[10];
+	for (i = head; i->next != NULL; i = i->next)
+	{ //These nested loops are used to compare the nodes one by one in a linked list
+		for (j = i->next; j != NULL; j = j->next)
+		{
+			temp = strcmp(i->name, j->name); //Built-In function used to compare value
+			if (temp > 0)
+			{
+				strcpy_s(n, i->name);
+				strcpy_s(i->name, j->name); //sorting
+				strcpy_s(j->name, n);
+			}
+		}
+	}
+}
+//Delete Node Function
+void dlist::deletecontact(char s[20])
+{
+	int c = 0;
+	ptr = head;
+	while (ptr != NULL)
+	{
+		if (strcmp(s, ptr->name) == 0) //if the entered string matches to name c will change to 1
+		{
+			c = 1;
+			break;
+		}
+		else
+		{
+			c = 2; //if not then it will change to 2
+		}
+		ptr = ptr->next; //everytimeptr will point to next node
+	}
+	if (c == 1 && ptr != head && ptr->next != NULL) //if value matches but it not headand still the list is not empty this check will work then.
+	{
+		ptr->prev->next = ptr->next; //removing the links from the node which we want to remove from listand connecting the remaining list
+		ptr->next->prev = ptr->prev;
+		delete(ptr);
+		SetConsoleTextAttribute(console, 2);
+		cout << "Contact is deleted\n\n";
+	}
+	if (ptr == head) //in case the the entered value to be deleted is head
+	{
+		head = head->next; //making the next node head and removing the head node from the list
+		head->prev = NULL;
+		delete(ptr); //then permenently deleting then head node 
+		SetConsoleTextAttribute(console, 2);
+		cout << "Contact is deleted\n\n";
+	}
+	if (ptr->next == NULL) //in case there is no value in the next node
+	{
+		ptr->prev->next = NULL;
+		ptr->prev = NULL;
+		delete(ptr);
+		SetConsoleTextAttribute(console, 2);
+		cout << "\nContact is deleted \n" << endl;
+	}
+	if (c == 2) // when c will be 2 simply means that data entered was not present in the list
+	{
+		SetConsoleTextAttribute(console, 4);
+		cout << "Error! Name not found in list!! " << endl;
+	}
+}
+//Function for deleting the duplicate name of contact
+void dlist::deletesamename()
+{
+	ptr1 = head;
+	while (ptr1 != NULL && ptr1->next != NULL) //while the first two values in the list will not be null this will keep on iterating
+	{
+		ptr2 = ptr1; //head points to ptr2 now
+
+		while (ptr2->next != NULL) //if node after ptr2 is not equal to null
+		{
+			if (strcmp(ptr1->name, ptr2->next->name) == 0) //comparing names from both nodesand checking if it equal to 0 this check will work
+			{
+				dup = ptr2->next; //'dup'stores the next value to the ptr2and point to it
+				ptr2->next = ptr2->next->next; //and next value of ptr2 will store its next valueand point to its next node
+				delete(dup); //if there are two same names in contact it will deletethe duplicate name
+			}
+			else
+			{
+				ptr2 = ptr2->next; //will keep on pointing to the nodes to the end of list
+			}
+		}
+		ptr1 = ptr1->next;
+	}
+}
+//Fuction For deleting the duplicate mail of contact
+void dlist::deletesamegmail()
+{
+	ptr1 = head;
+	while (ptr1 != NULL && ptr1->next != NULL)
+	{
+		ptr2 = ptr1;
+		while (ptr2->next != NULL)
+		{
+			if (strcmp(ptr1->gmail, ptr2->next->gmail) == 0) //code same as the 'deletesamename' function
+			{
+				dup = ptr2->next;
+				ptr2->next = ptr2->next->next;
+				delete(dup);
+			}
+			else
+			{
+				ptr2 = ptr2->next;
+			}
+		}
+		ptr1 = ptr1->next;
+	}
+}
+//Function for searching the contact
+void dlist::searchbyname(char na[10])
+{
+	ptr = head;
+	while (ptr != NULL) //this will work till HEAD is not empty or lint is not empty
+	{
+		if (strcmp(na, ptr->name) == 0) //comparing the entered value with the name
+		{
+			SetConsoleTextAttribute(console, 4);
+			cout << "Name Found" << endl;
+
+			SetConsoleTextAttribute(console, 1);
+			cout << "Contact details :\n" << endl;
+			cout << "\n Name :\t" << ptr->name;
+			cout << "\n Number:\t" << ptr->number;
+			cout << "\n Gmail:\t" << ptr->gmail;
+		}
+		ptr = ptr->next; //will point to next node everytime
+	}
+}
+//Function for searching by phone number
+void dlist::searchbynumber(char num[20])
+{
+	ptr = head;
+	while (ptr != NULL) //all logic same as the "searchbyname"
+	{
+		if (strcmp(num, ptr->number) == 0)
+		{
+			SetConsoleTextAttribute(console, 4);
+			cout << "Number found\n" << endl;
+			SetConsoleTextAttribute(console, 1);
+			cout << "Following are Contact details:\n" << endl;
+			cout << "\n Name: \t" << ptr->name;
+			cout << "\n Number: \t" << ptr->number;
+			cout << "\n Gmail: \t" << ptr->gmail;
+		}
+		ptr = ptr->next;
+	}
+}
+void dlist::searchbygmail(char gm[20])
+{
+	ptr = head;
+	while (ptr != NULL)
+	{
+		if (strcmp(gm, ptr->gmail) == 0)
+		{
+			SetConsoleTextAttribute(console, 4);
+			cout << "Gmail found\n" << endl;
+			SetConsoleTextAttribute(console, 1);
+			cout << "Following are Contact details:\n" << endl;
+			cout << "\nName: \t" << ptr->name;
+			cout << "\n Number: \t" << ptr->number;
+			cout << "\n Gmail: \t" << ptr->gmail;
+		}
+		ptr = ptr->next;
+	}
+}
+//Function for updating or changing the data
+void dlist::update(char n[20])
+{
+	char ans;
+	int c;
+	ptr = head;
+	while (ptr != NULL) //when head will have any value
+	{
+		if (strcmp(n, ptr->name) == 0) //checking the entered value by comparing
+		{
+			do//Using exit control loop
+			{
+				SetConsoleTextAttribute(console, 10);
+				cout << "\n **What do want to update ? ****\n\n | 1.NAME | \n | 2.PHONE NUMBER | \n | 3.G-MAIL| \n";
+				cin >> c;
+				switch (c) //using switch statement for selecting a particular option
+				{
+				case 1:
+					SetConsoleTextAttribute(console, 2);
+					cout << "\nEnter new name:";
+					cin >> ptr->name;
+					break;
+				case 2:
+					cout << "\nEnter new number:";
+					cin >> ptr->number;
+					while (strlen(ptr->number) != 11) //in case the string length not same
+					{
+						cout << "\nEnter valid number: ";
+						cin >> ptr->number;
+					}
+					break;
+				case 3:
+					cout << "\nEnter new gmail: ";
+					cin >> ptr->gmail;
+					break;
+				}
+				SetConsoleTextAttribute(console, 1);
+				cout << " --- Do you want more updation?-- - ";
+				cin >> ans;
+			} while (ans == 'y');
+		}
+		ptr = ptr->next; //keep on pointing till end of the list
+	}
+}
+//Main Function
+int main()
+{
+	char n[20];
+	char nam[20];
+	char name[10];
+	char number[10];
+	char gmail[20];
+	dlist d1; //Object
+	char ans;
+	int ch, a;
+	SetConsoleTextAttribute(console, 5);
+	cout << " \n*******************************************";
+	cout << " \n | Welcome To Phone-Book Management System | ";
+	cout << " \n*******************************************";
+	cout << "\n\n\n => What is your name? ";
+	SetConsoleTextAttribute(console, 4);
+	cin.getline(name, 20);
+	SetConsoleTextAttribute(console, 2);
+	cout << "\n\n |Creating " << name << " 's Contact List * *| \n\n";
+	d1.information();
+	d1.sort();
+	do
+	{
+		SetConsoleTextAttribute(console, 1);
+		cout << "\n **************************** ";
+		cout << "\n\n | 1) Display Phone-book |\n | 2) Insert new contact |\n | 3) Update existing book | \n | 4) Delete Contact | \n | 5) Delete redundant 	name | \n | 6) Delete redundant number | \n | 7) Search a contact | \n";
+		cout << "\n **************************** ";
+		SetConsoleTextAttribute(console, 2);
+		cin >> ch;
+		//Now will simply call function using objects here in the main function ;)
+		switch (ch)
+		{
+		case 1:
+		{
+			d1.sort();
+			d1.traverse();
+		}
+		break;
+		case 2:
+		{
+			d1.insert();
+			d1.sort();
+		}
+		break;
+		case 3:
+		{
+			SetConsoleTextAttribute(console, 1);
+			cout << "\nEnter the name of person whose details you want to update:\n";
+			cin >> n;
+			SetConsoleTextAttribute(console, 2);
+			d1.update(n);
+			d1.sort();
+		}
+		break;
+		case 4:
+		{
+			SetConsoleTextAttribute(console, 1);
+			cout << "\nEnter the name you want to delete from phonebook:" << endl;
+			SetConsoleTextAttribute(console, 2);
+			cin >> name;
+			d1.deletecontact(name);
+		}
+		break;
+		case 5:
+		{
+			d1.deletesamename();
+			d1.traverse();
+		}
+		break;
+		case 6:
+		{
+			d1.traverse();
+		}
+		break;
+		case 7:
+			do
+			{
+				SetConsoleTextAttribute(console, 1);
+				cout << "\n |1.Search by name |\n |2.Search by number|\n | 3.Search by gmail | ";
+				cin >> a;
+				switch (a)
+				{
+				case 1:
+					SetConsoleTextAttribute(console, 3);
+					cout << " ** Enter the name to be searched * **\n";
+					cin >> name;
+					d1.searchbyname(name);
+					break;
+				case 2:
+					SetConsoleTextAttribute(console, 3);
+					cout << " ** Enter the name to be searched * **\n";
+					cin >> number;
+					d1.searchbynumber(number);
+					break;
+				case 3:
+					SetConsoleTextAttribute(console, 3);
+					cout << " ** Enter the name to be searched * **\n";
+					cin >> gmail;
+					d1.searchbygmail(gmail);
+					break;
+					SetConsoleTextAttribute(console, 4);
+				default:cout << "\n No proper input given \n";
+				}
+				SetConsoleTextAttribute(console, 3);
+				cout << "\n ---Do you want to continue searching ? -- - ";
+				cin >> ans;
+			} while (ans == 'y');
+			break;
+		case 8:
+			d1.deletesamegmail();
+			d1.traverse();
+			break;
+		default:
+			SetConsoleTextAttribute(console, 4);
+			cout << "\n No proper input given.\n";
+		}
+		SetConsoleTextAttribute(console, 3);
+		cout << "\n --- Do you want to continue operations? ---";
+		cin >> ans;
+	} while (ans == 'y');
+	system("pause");
+	_getch();
+	return 0;
+}
